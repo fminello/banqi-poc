@@ -1,0 +1,11 @@
+{
+  "window.titleSeparator": " - ",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
+  "window.title": "${dirty}${activeEditorShort} ${separator} BanQi - POC ${separator}${appName}"
+}
