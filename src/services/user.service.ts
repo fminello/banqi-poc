@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { User, Prisma } from '@prisma/client';
+import { CompressionTypes, Kafka, logLevel } from 'kafkajs';
 
 @Injectable()
 export class UserService {
@@ -32,6 +33,43 @@ export class UserService {
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    const kafka = new Kafka({
+      logLevel: logLevel.INFO,
+      // logCreator: PrettyConsoleLogger,
+      // brokers: [`${host}:9094`, `${host}:9097`, `${host}:9100`],
+      brokers: [`localhost:9092`],
+      clientId: 'user-producer',
+      // ssl: {
+      //   servername: 'localhost',
+      //   rejectUnauthorized: false,
+      //   ca: [fs.readFileSync('./testHelpers/certs/cert-signed', 'utf-8')],
+      // },
+      // sasl: {
+      //   mechanism: 'plain',
+      //   username: 'test',
+      //   password: 'testtest',
+      // },
+    })
+    const topic = 'quickstart-events'
+    const producer = kafka.producer()
+
+    await producer.connect()
+
+    console.log('pr')
+
+    producer.send({
+      topic,
+      compression: CompressionTypes.GZIP,
+      messages: [{
+        key: '1',
+        value: 'teste lalala'
+      }],
+    })
+    .then(response => {
+      kafka.logger().info(`Messages sent #1`, { response })
+    })
+    .catch(e => kafka.logger().error(`[example/producer] ${e.message}`, { stack: e.stack }))
+
     return this.prisma.user.create({
       data,
     });
